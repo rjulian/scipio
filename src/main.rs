@@ -73,7 +73,7 @@ async fn describe_all_instances() -> Result<(), Ec2Error> {
 
     let instances = resp.reservations;
 
-    match instances.clone() {
+    match instances {
         Some(found_instances) => println!("{:?}", found_instances),
         None => println!("No instances found."),
     }
@@ -114,10 +114,11 @@ fn main() {
                 .command
                 .unwrap_or(Ec2Commands::DescribeInstances(ec2.describe_ec2));
             match ec2_cmd {
-                Ec2Commands::DescribeInstances(_describe_ec2) => match describe_all_instances() {
-                    Err(e) => println!("{:?}", e),
-                    _ => (),
-                },
+                Ec2Commands::DescribeInstances(_describe_ec2) => {
+                    if let Err(e) = describe_all_instances() {
+                        println!("{:?}", e)
+                    }
+                }
             }
         }
 
@@ -126,10 +127,11 @@ fn main() {
                 .command
                 .unwrap_or(IamCommands::ListAdmins(iam.list_admins));
             match iam_cmd {
-                IamCommands::ListAdmins(_list_admins) => match list_all_roles() {
-                    Err(e) => println!("{:?}", e),
-                    _ => (),
-                },
+                IamCommands::ListAdmins(_list_admins) => {
+                    if let Err(e) = list_all_roles() {
+                        println!("{:?}", e)
+                    }
+                }
             }
         }
     }
