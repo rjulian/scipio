@@ -106,18 +106,12 @@ fn display_roles(list_roles: ListRolesOutput, mut writer: impl std::io::Write) {
         };
     }
 
-    if let Err(e) = writeln!(writer) {
-        println!("{:?}", e)
-    };
-    if let Err(e) = writeln!(writer, "Found {} roles", roles.len()) {
+    if let Err(e) = writeln!(writer, "\nFound {} roles", roles.len()) {
         println!("{:?}", e)
     };
 }
 fn display_instances(describe_instances: DescribeInstancesOutput, mut writer: impl std::io::Write) {
-    if let Err(e) = writeln!(writer, "{:?}", describe_instances) {
-        println!("{:?}", e)
-    };
-    if let Err(e) = writeln!(writer, "Ec2 Instances:") {
+    if let Err(e) = writeln!(writer, "{:?}\nEc2 Instances:", describe_instances) {
         println!("{:?}", e)
     };
 
