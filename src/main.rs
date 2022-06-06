@@ -84,31 +84,57 @@ async fn list_all_roles() -> Result<ListRolesOutput, Error> {
     Ok(resp)
 }
 
-fn display_roles(list_roles: ListRolesOutput) {
-    println!("IAM Roles:");
+fn display_roles(list_roles: ListRolesOutput, mut writer: impl std::io::Write) {
+    if let Err(e) = writeln!(writer, "IAM Roles:") {
+        println!("{:?}", e)
+    };
 
     let roles = list_roles.roles().unwrap_or_default();
 
     for role in roles {
         match role.role_name.clone() {
-            Some(found_role) => println!("{}", found_role),
-            None => println!("No role name."),
-        }
+            Some(found_role) => {
+                if let Err(e) = writeln!(writer, "{}", found_role) {
+                    println!("{:?}", e)
+                }
+            }
+            None => {
+                if let Err(e) = writeln!(writer, "No role name.") {
+                    println!("{:?}", e)
+                }
+            }
+        };
     }
 
-    println!();
-    println!("Found {} roles", roles.len());
+    if let Err(e) = writeln!(writer) {
+        println!("{:?}", e)
+    };
+    if let Err(e) = writeln!(writer, "Found {} roles", roles.len()) {
+        println!("{:?}", e)
+    };
 }
-fn display_instances(describe_instances: DescribeInstancesOutput) {
-    println!("{:?}", describe_instances);
-    println!("Ec2 Instances:");
+fn display_instances(describe_instances: DescribeInstancesOutput, mut writer: impl std::io::Write) {
+    if let Err(e) = writeln!(writer, "{:?}", describe_instances) {
+        println!("{:?}", e)
+    };
+    if let Err(e) = writeln!(writer, "Ec2 Instances:") {
+        println!("{:?}", e)
+    };
 
     let instances = describe_instances.reservations;
 
     match instances {
-        Some(found_instances) => println!("{:?}", found_instances),
-        None => println!("No instances found."),
-    }
+        Some(found_instances) => {
+            if let Err(e) = writeln!(writer, "{:?}", found_instances) {
+                println!("{:?}", e)
+            }
+        }
+        None => {
+            if let Err(e) = writeln!(writer, "No instances found.") {
+                println!("{:?}", e)
+            }
+        }
+    };
 }
 
 fn main() {
@@ -121,7 +147,9 @@ fn main() {
                 .unwrap_or(Ec2Commands::DescribeInstances(ec2.describe_ec2));
             match ec2_cmd {
                 Ec2Commands::DescribeInstances(_describe_ec2) => match describe_all_instances() {
-                    Ok(instances_described) => display_instances(instances_described),
+                    Ok(instances_described) => {
+                        display_instances(instances_described, &mut std::io::stdout())
+                    }
                     Err(e) => println!("{:?}", e),
                 },
             }
@@ -133,7 +161,7 @@ fn main() {
                 .unwrap_or(IamCommands::ListAdmins(iam.list_admins));
             match iam_cmd {
                 IamCommands::ListAdmins(_list_admins) => match list_all_roles() {
-                    Ok(list_roles) => display_roles(list_roles),
+                    Ok(list_roles) => display_roles(list_roles, &mut std::io::stdout()),
                     Err(e) => println!("{:?}", e),
                 },
             }
