@@ -1,5 +1,7 @@
 use aws_config::meta::region::RegionProviderChain;
+use aws_sdk_ec2::output::DescribeInstancesOutput;
 use aws_sdk_ec2::{Client as Ec2Client, Error as Ec2Error};
+use aws_sdk_iam::output::ListRolesOutput;
 use aws_sdk_iam::{Client as IamClient, Error};
 
 use clap::{Args, Parser, Subcommand};
@@ -61,37 +63,31 @@ struct IamListAdmins {
 }
 
 #[tokio::main]
-async fn describe_all_instances() -> Result<(), Ec2Error> {
+async fn describe_all_instances() -> Result<DescribeInstancesOutput, Ec2Error> {
     let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
     let config = aws_config::from_env().region(region_provider).load().await;
     let client = Ec2Client::new(&config);
 
     let resp = client.describe_instances().send().await?;
 
-    println!("{:?}", resp);
-    println!("Ec2 Instances:");
-
-    let instances = resp.reservations;
-
-    match instances {
-        Some(found_instances) => println!("{:?}", found_instances),
-        None => println!("No instances found."),
-    }
-
-    Ok(())
+    Ok(resp)
 }
 
 #[tokio::main]
-async fn list_all_roles() -> Result<(), Error> {
+async fn list_all_roles() -> Result<ListRolesOutput, Error> {
     let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
     let config = aws_config::from_env().region(region_provider).load().await;
     let client = IamClient::new(&config);
 
     let resp = client.list_roles().send().await?;
 
+    Ok(resp)
+}
+
+fn display_roles(list_roles: ListRolesOutput) {
     println!("IAM Roles:");
 
-    let roles = resp.roles().unwrap_or_default();
+    let roles = list_roles.roles().unwrap_or_default();
 
     for role in roles {
         match role.role_name.clone() {
@@ -102,7 +98,17 @@ async fn list_all_roles() -> Result<(), Error> {
 
     println!();
     println!("Found {} roles", roles.len());
-    Ok(())
+}
+fn display_instances(describe_instances: DescribeInstancesOutput) {
+    println!("{:?}", describe_instances);
+    println!("Ec2 Instances:");
+
+    let instances = describe_instances.reservations;
+
+    match instances {
+        Some(found_instances) => println!("{:?}", found_instances),
+        None => println!("No instances found."),
+    }
 }
 
 fn main() {
@@ -114,11 +120,10 @@ fn main() {
                 .command
                 .unwrap_or(Ec2Commands::DescribeInstances(ec2.describe_ec2));
             match ec2_cmd {
-                Ec2Commands::DescribeInstances(_describe_ec2) => {
-                    if let Err(e) = describe_all_instances() {
-                        println!("{:?}", e)
-                    }
-                }
+                Ec2Commands::DescribeInstances(_describe_ec2) => match describe_all_instances() {
+                    Ok(instances_described) => display_instances(instances_described),
+                    Err(e) => println!("{:?}", e),
+                },
             }
         }
 
@@ -127,11 +132,10 @@ fn main() {
                 .command
                 .unwrap_or(IamCommands::ListAdmins(iam.list_admins));
             match iam_cmd {
-                IamCommands::ListAdmins(_list_admins) => {
-                    if let Err(e) = list_all_roles() {
-                        println!("{:?}", e)
-                    }
-                }
+                IamCommands::ListAdmins(_list_admins) => match list_all_roles() {
+                    Ok(list_roles) => display_roles(list_roles),
+                    Err(e) => println!("{:?}", e),
+                },
             }
         }
     }
