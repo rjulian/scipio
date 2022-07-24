@@ -2,7 +2,7 @@ use aws_config::meta::region::RegionProviderChain;
 use aws_sdk_ec2::output::DescribeInstancesOutput;
 use aws_sdk_ec2::{Client as Ec2Client, Error as Ec2Error};
 use aws_sdk_iam::output::ListRolesOutput;
-use aws_sdk_iam::{Client as IamClient, Error};
+use aws_sdk_iam::{Client as IamClient, Error as IamError};
 
 use clap::{Args, Parser, Subcommand};
 
@@ -74,7 +74,7 @@ async fn describe_all_instances() -> Result<DescribeInstancesOutput, Ec2Error> {
 }
 
 #[tokio::main]
-async fn list_all_roles() -> Result<ListRolesOutput, Error> {
+async fn list_all_roles() -> Result<ListRolesOutput, IamError> {
     let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
     let config = aws_config::from_env().region(region_provider).load().await;
     let client = IamClient::new(&config);
@@ -92,18 +92,7 @@ fn display_roles(list_roles: ListRolesOutput, mut writer: impl std::io::Write) {
     let roles = list_roles.roles().unwrap_or_default();
 
     for role in roles {
-        match role.role_name.clone() {
-            Some(found_role) => {
-                if let Err(e) = writeln!(writer, "{}", found_role) {
-                    println!("{:?}", e)
-                }
-            }
-            None => {
-                if let Err(e) = writeln!(writer, "No role name.") {
-                    println!("{:?}", e)
-                }
-            }
-        };
+        println!("{:?}", role.role_name().unwrap())
     }
 
     if let Err(e) = writeln!(writer, "\nFound {} roles", roles.len()) {
@@ -115,20 +104,15 @@ fn display_instances(describe_instances: DescribeInstancesOutput, mut writer: im
         println!("{:?}", e)
     };
 
-    let instances = describe_instances.reservations;
+    let reservations = describe_instances.reservations().unwrap();
 
-    match instances {
-        Some(found_instances) => {
-            if let Err(e) = writeln!(writer, "{:?}", found_instances) {
-                println!("{:?}", e)
-            }
+    for reservation in reservations {
+        let instances = reservation.instances().unwrap();
+        for instance in instances {
+            let instance_id = instance.instance_id().unwrap();
+            println!("{:?}", instance_id)
         }
-        None => {
-            if let Err(e) = writeln!(writer, "No instances found.") {
-                println!("{:?}", e)
-            }
-        }
-    };
+    }
 }
 
 fn main() {
