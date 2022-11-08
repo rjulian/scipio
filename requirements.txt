@@ -1,0 +1,12 @@
+click
+pip-check-reqs
+pip-licenses
+pylint
+pytest
+pytest-cov
+pytest-pythonpath
+setuptools
+Sphinx
+sphinx-rtd-theme
+tox
+twine
