@@ -21,6 +21,7 @@ It can be used as a handy facility for running the task from a command line.
 import logging
 import click
 from .__init__ import __version__
+from .aws import Aws
 
 LOGGING_LEVELS = {
     0: logging.NOTSET,
@@ -31,7 +32,7 @@ LOGGING_LEVELS = {
 }  #: a mapping of `verbose` option counts to logging levels
 
 
-class Info:
+class Context:
     """An information object to pass data between CLI functions."""
 
     def __init__(self):  # Note: This object must have an empty constructor.
@@ -41,7 +42,7 @@ class Info:
 
 # pass_info is a decorator for functions that pass 'Info' objects.
 #: pylint: disable=invalid-name
-pass_info = click.make_pass_decorator(Info, ensure=True)
+pass_info = click.make_pass_decorator(Context, ensure=True)
 
 
 # Change the options to below to suit the actual options for your task (or
@@ -49,7 +50,7 @@ pass_info = click.make_pass_decorator(Info, ensure=True)
 @click.group()
 @click.option("--verbose", "-v", count=True, help="Enable verbose output.")
 @pass_info
-def cli(info: Info, verbose: int):
+def cli(context: Context, verbose: int):
     """Run scipio."""
     # Use the verbosity count to determine the logging level...
     if verbose > 0:
@@ -65,17 +66,23 @@ def cli(info: Info, verbose: int):
                 fg="yellow",
             )
         )
-    info.verbose = verbose
+    context.verbose = verbose
 
-
-@cli.command()
-@pass_info
-def hello(_: Info):
-    """Say 'hello' to the nice people."""
-    click.echo("scipio says 'hello'")
 
 
 @cli.command()
 def version():
     """Get the library version."""
     click.echo(click.style(f"{__version__}", bold=True))
+
+@cli.group()
+@pass_info
+def aws(context: Context):
+    """Work within the context of AWS cloud."""
+    context.aws = Aws()
+
+@aws.command()
+@pass_info
+def info(context: Context):
+    """Gives you account info."""
+    click.echo(context.aws.display_configured_account(), nl=False)
