@@ -2,12 +2,10 @@
 
 CLI tool to undertake cloud reconnaisance and attacks.
 
-## Project Features
-
-* [scipio](http://scipio.readthedocs.io/)
-* a starter [Click](http://click.pocoo.org/5/) command-line application
-* automated unit tests you can run with [pytest](https://docs.pytest.org/en/latest/)
-* a [Sphinx](http://www.sphinx-doc.org/en/master/) documentation project
+You should use this tool to:
+* Test your cloud infrastructure for vulnerabilities.
+* Gather security information about your deployed infrastructure.
+* Trigger specific security events in order to test detective infrastructure. 
 
 ## Getting Started
 
