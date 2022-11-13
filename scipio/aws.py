@@ -8,12 +8,12 @@ class Aws:
     def __init__(self):
         """New instance of AWS class"""
         self.aws_session = None
-        self.aws_client = None
+        self.sts_client = None
 
     def display_configured_account(self):
         """Calls sts get caller identify and returns info for user."""
-        self.aws_client = boto3.client("sts")
-        caller_identity = self.aws_client.get_caller_identity()
+        self.sts_client = boto3.client("sts")
+        caller_identity = self.sts_client.get_caller_identity()
         display_string = self.format_sts_information(caller_identity)
         return display_string
 
