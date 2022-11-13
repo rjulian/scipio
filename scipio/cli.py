@@ -22,6 +22,7 @@ import logging
 import click
 from .__init__ import __version__
 from .aws import Aws
+from .aws_iam import AwsIam
 
 LOGGING_LEVELS = {
     0: logging.NOTSET,
@@ -69,11 +70,11 @@ def cli(context: Context, verbose: int):
     context.verbose = verbose
 
 
-
 @cli.command()
 def version():
     """Get the library version."""
     click.echo(click.style(f"{__version__}", bold=True))
+
 
 @cli.group()
 @pass_info
@@ -81,8 +82,24 @@ def aws(context: Context):
     """Work within the context of AWS cloud."""
     context.aws = Aws()
 
+
 @aws.command()
 @pass_info
 def info(context: Context):
     """Gives you account info."""
     click.echo(context.aws.display_configured_account(), nl=False)
+
+
+@aws.group()
+@pass_info
+def iam(context: Context):
+    """IAM related actions and scanning"""
+    context.aws_iam = AwsIam(context.aws)
+
+
+@iam.command()
+@pass_info
+def create_privileged_access(context: Context):
+    """Generates users and policies that allow for privilege escalation."""
+    context.aws_iam.create_all_privileged_access()
+    click.echo("Created privileged access.")
