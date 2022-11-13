@@ -10,4 +10,5 @@ Sphinx
 sphinx-rtd-theme
 tox
 twine
+black
 boto3==1.26.7

@@ -4,6 +4,7 @@ PROJ_SLUG = scipio
 CLI_NAME = scipio
 PY_VERSION = 3.8
 LINTER = pylint
+FORMATTER = black
 
 SHELL = bash
 
@@ -21,10 +22,13 @@ submit:
 freeze:
 	pip freeze > requirements.txt
 
-lint:
+format:
+	$(FORMATTER) $(PROJ_SLUG)
+
+lint: 
 	$(LINTER) $(PROJ_SLUG)
 
-test: lint
+test: format lint
 	py.test --cov-report term --cov=$(PROJ_SLUG) tests/
 
 quicktest:
