@@ -12,6 +12,10 @@ import pytest
 from moto import mock_iam
 import scipio.aws_iam as iam
 import scipio.aws as aws
+import os
+
+os.environ["AWS_ACCESS_KEY_ID"] = "test"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
 
 """
 This is just an example test suite.  It will check the current project version
