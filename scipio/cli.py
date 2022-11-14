@@ -101,5 +101,13 @@ def iam(context: Context):
 @pass_info
 def create_privileged_access(context: Context):
     """Generates users and policies that allow for privilege escalation."""
-    context.aws_iam.create_all_privileged_access()
+    context.aws_iam.create_user_privileged_access()
     click.echo("Created privileged access.")
+
+
+@iam.command()
+@pass_info
+def destroy_aws_iam_resources(context: Context):
+    """Destroys users and policies created by scipio"""
+    context.aws_iam.destroy_scipio_users_policies()
+    click.echo("Destroyed user resources.")
