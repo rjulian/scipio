@@ -15,4 +15,4 @@ class AwsIam:
     def create_all_privileged_access(self):
         """Creates policies, users, and roles in a way that would allow for privilege escalation."""
         print(f"Creating user: scipio_run_{self.iam_suffix}")
-        self.iam_client.create_user(UserName=f"scipio_run_{self.iam_suffix}")
+        return self.iam_client.create_user(UserName=f"scipio_run_{self.iam_suffix}")
