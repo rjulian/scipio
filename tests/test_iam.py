@@ -26,9 +26,23 @@ the current version numbers change.
 test_object = iam.AwsIam(aws.Aws())
 
 @mock_iam
-def test_privileged_user_creation():
-    response = test_object.create_all_privileged_access()
+def test_user_creation():
+    response = test_object.create_privileged_user()
     print(response)
     assert "User" in response
     assert "UserName" in response["User"]
-    assert "scipio_run" in response["User"]["UserName"]
+    assert "scipio_user" in response["User"]["UserName"]
+
+@mock_iam
+def test_policy_creation():
+    response = test_object.create_privileged_policy()
+    print(response)
+    assert "Policy" in response
+    assert "scipio_policy" in response["Policy"]["PolicyName"]
+
+@mock_iam
+def test_policy_attachment():
+    response = test_object.create_user_privileged_access()
+    print(response)
+    assert "HTTPStatusCode" in response["ResponseMetadata"]
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
