@@ -1,5 +1,6 @@
 """Module for handling core AWS functionality"""
 import boto3
+import uuid
 
 
 class Aws:
@@ -9,6 +10,7 @@ class Aws:
         """New instance of AWS class"""
         self.aws_session = None
         self.sts_client = None
+        self.run_suffix = str(uuid.uuid4())[:8]
 
     def display_configured_account(self):
         """Calls sts get caller identify and returns info for user."""

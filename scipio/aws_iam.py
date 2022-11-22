@@ -31,6 +31,7 @@ class AwsIam:
         """New instance of AWS IAM class"""
         self.aws_session = aws_session
         self.iam_client = boto3.client("iam")
+        # TODO remove in favor of aws_session.run_suffix
         self.iam_suffix = str(uuid.uuid4())[:8]
 
     def create_user_privileged_access(self):

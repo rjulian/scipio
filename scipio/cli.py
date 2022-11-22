@@ -23,6 +23,7 @@ import click
 from .__init__ import __version__
 from .aws import Aws
 from .aws_iam import AwsIam
+from .aws_ec2 import AwsEc2
 
 LOGGING_LEVELS = {
     0: logging.NOTSET,
@@ -93,9 +94,21 @@ def info(context: Context):
 @aws.group()
 @pass_info
 def iam(context: Context):
-    """IAM related actions and scanning"""
+    """IAM related actions and scanning."""
     context.aws_iam = AwsIam(context.aws)
 
+@aws.group()
+@pass_info
+def ec2(context: Context):
+    """EC2 related actions and enumeration."""
+    context.aws_ec2 = AwsEc2(context.aws)
+
+@ec2.command()
+@pass_info
+def simulate_bitcoin_mining_attack(context: Context):
+    """Launches EC2 instance that attempts communication with bitcoin wallet."""
+    context.aws_ec2.simulate_mining_attack()
+    click.echo("Simulated interaction with bitcoin mining endpoint")
 
 @iam.command()
 @pass_info
